@@ -35,7 +35,7 @@ defmodule Number do
   @npa            ~r/\A^[2-9][0-9]{2}$\z/
   @npanxx         ~r/\A^[2-9][0-9]{2}[2-9][0-9]{2}\z/
   @tf_npa         ~r/\A^(?:800|877|866|855|844|833)$\z/
-  @toll_npa       ~r/\A^(?:900|976)$\z/
+  @toll_npa       ~r/\A^(?:900|977|976)$\z/
 
   @doc """
   Returns version
