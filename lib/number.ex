@@ -32,10 +32,7 @@ defmodule Number do
   @international  ~r/\A^(?:\+|011)[2-9][0-9]{10,14}\z/
   @tollfree       ~r/\A^(?:\+)?(?:1)?(?:800|888|877|866|855|844|833)[2-9][0-9]{6}$\z/
   @us_toll        ~r/\A^(?:\+)?(?:1)?(?:900|976)[2-9][0-9]{6}$\z/
-  @npa            ~r/\A^[2-9][0-9]{2}$\z/
-  @npanxx         ~r/\A^[2-9][0-9]{2}[2-9][0-9]{2}\z/
-  @tf_npa         ~r/\A^(?:800|877|866|855|844|833)$\z/
-  @toll_npa       ~r/\A^(?:900|977|976)$\z/
+  @us_intl        ~r/\A^011[2-9][0-9]{10,14}$\z/
 
   @doc """
   Returns version
@@ -65,6 +62,19 @@ defmodule Number do
     end
   end
 
+
+  @doc """
+  Normalize a number
+  """
+  def normalize(number) do
+    case is_international?(number) do
+      true ->
+        normalize_intl(number)
+      false ->
+        normalize_us(number)
+    end
+  end
+
   @doc """
   Converts a number to E164
   """
@@ -77,6 +87,31 @@ defmodule Number do
           is_npan?(number)  -> "+1#{number}"
           is_1npan?(number) -> "+#{number}"
           true              -> number
+        end
+    end
+  end
+
+  @doc """
+  Normalizes an international number
+  """
+  def normalize_intl(number) do
+    case is_international?(number) do
+      true ->
+        case is_e164?(number) do
+          true ->
+            number
+          false ->
+            case Regex.match?(@us_intl, number) do
+              true ->
+                Regex.replace(~r/^011/, number, "+")
+              false ->
+                number
+            end
+        end
+      false ->
+        case classify(number) do
+          "unknown" -> number
+          _ -> normalize_us(number)
         end
     end
   end
