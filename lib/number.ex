@@ -67,54 +67,41 @@ defmodule Number do
   Normalize a number
   """
   def normalize(number) do
-    case is_international?(number) do
-      true ->
-        normalize_intl(number)
-      false ->
-        normalize_us(number)
-    end
-  end
-
-  @doc """
-  Converts a number to E164
-  """
-  def normalize_us(number) do
-    case is_e164?(number) do
-      true ->
-        number
-      false ->
-        cond do
-          is_npan?(number)  -> "+1#{number}"
-          is_1npan?(number) -> "+#{number}"
-          true              -> number
-        end
-    end
-  end
-
-  @doc """
-  Normalizes an international number
-  """
-  def normalize_intl(number) do
-    case is_international?(number) do
-      true ->
+    # case is_international?(number) do
+    #   true ->
+    #     normalize_intl(number)
+    #   false ->
+    #     normalize_us(number)
+    # end
+    case classify(number) do
+      n when n in ["e164","npan", "1npan", "us_tollfree", "us_toll"] ->
         case is_e164?(number) do
           true ->
             number
           false ->
-            case Regex.match?(@us_intl, number) do
+            cond do
+              is_npan?(number)  -> "+1#{number}"
+              is_1npan?(number) -> "+#{number}"
+              true              -> number
+            end
+        end
+      "international" ->
+        case is_e164?(number) do
+          true ->
+            number
+          false ->
+            case is_usintl?(number) do
               true ->
-                Regex.replace(~r/^011/, number, "+")
+                Regex.replace(~r/\A^011/, number, "+")
               false ->
                 number
             end
         end
-      false ->
-        case classify(number) do
-          "unknown" -> number
-          _ -> normalize_us(number)
-        end
+      _ ->
+        "Unknown"
     end
   end
+
 
   @doc """
   Converts a number to NPAN
@@ -128,7 +115,7 @@ defmodule Number do
       "npan" ->
         number
       "us_tollfree" ->
-        Regex.replace(~r/^\+1/, normalize_us(number), "")
+        Regex.replace(~r/^\+1/, normalize(number), "")
       _ ->
         {:error, :not_supported}
     end
@@ -146,15 +133,16 @@ defmodule Number do
       "1npan" ->
         number
       "us_tollfree" ->
-        Regex.replace(~r/^\+/, normalize_us(number), "")
+        Regex.replace(~r/^\+/, normalize(number), "")
     end
   end
+
 
   @doc """
   to E164, we just call the normalize_us function
   """
   def to_e164(number) do
-    normalize_us(number)
+    normalize(number)
   end
 
   #--- private ---#
@@ -180,5 +168,9 @@ defmodule Number do
 
   defp is_e164?(number) do
     String.match?(number, @e164)
+  end
+
+  defp is_usintl?(number) do
+    String.match?(number, @us_intl)
   end
 end
