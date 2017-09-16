@@ -28,6 +28,7 @@ defmodule Number do
   #-- Number patterns used for regexes --#
   @npan           ~r/\A^[2-9][0-9]{2}[2-9][0-9]{6}$\z/
   @one_npan       ~r/\A^1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
+  @us_e164        ~r/\A^\+1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
   @e164           ~r/\A^\+[1-9][0-9]{10,14}$\z/
   @international  ~r/\A^(?:\+|011)[2-9][0-9]{10,14}\z/
   @tollfree       ~r/\A^(?:\+)?(?:1)?(?:800|888|877|866|855|844|833)[2-9][0-9]{6}$\z/
@@ -145,6 +146,17 @@ defmodule Number do
         end
       _ ->
         number
+    end
+  end
+
+  @doc """
+  Checks to see if the provided number is 10digit E164
+  """
+  def is_use164?(number) do
+    case is_e164?(number) do
+      true ->
+        String.match?(number, @us_e164)
+      false -> false
     end
   end
 
