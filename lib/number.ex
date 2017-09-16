@@ -67,12 +67,6 @@ defmodule Number do
   Normalize a number
   """
   def normalize(number) do
-    # case is_international?(number) do
-    #   true ->
-    #     normalize_intl(number)
-    #   false ->
-    #     normalize_us(number)
-    # end
     case classify(number) do
       n when n in ["e164","npan", "1npan", "us_tollfree", "us_toll"] ->
         case is_e164?(number) do
@@ -134,6 +128,23 @@ defmodule Number do
         number
       "us_tollfree" ->
         Regex.replace(~r/^\+/, normalize(number), "")
+    end
+  end
+
+  @doc """
+  Converts an international number to us_intl format
+  """
+  def to_usintl(number) do
+    case classify(number) do
+      "international" ->
+        case is_e164?(number) do
+          true ->
+            Regex.replace(~r/\+/, number, "011")
+          false ->
+            number
+        end
+      _ ->
+        number
     end
   end
 
