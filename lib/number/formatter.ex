@@ -35,7 +35,7 @@ defmodule Number.Formatter do
         # split the number into its parts
         %{"areacode" => areacode, "exchange" => exchange, "subscriber" => subscriber} = Regex.named_captures(@us_nanp, npan_n)
         "+1 (#{areacode}) #{exchange}-#{subscriber}"
-      false -> false
+      false -> number
     end
   end
 
