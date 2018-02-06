@@ -51,6 +51,7 @@ defmodule Number do
   * us_toll (900/976)
   * international
   """
+  @spec classify(number :: String.t()) :: String.t()
   def classify(number) do
     cond do
       is_tolled?(number)        -> "us_toll"
@@ -67,6 +68,7 @@ defmodule Number do
   @doc """
   Normalize a number
   """
+  @spec normalize(number :: String.t()) :: String.t()
   def normalize(number) do
     case classify(number) do
       n when n in ["e164","npan", "1npan", "us_tollfree", "us_toll"] ->
@@ -101,6 +103,7 @@ defmodule Number do
   @doc """
   Converts a number to NPAN
   """
+  @spec to_npan(number :: String) :: String.t()
   def to_npan(number) do
     case classify(number) do
       "e164" ->
@@ -112,13 +115,14 @@ defmodule Number do
       "us_tollfree" ->
         Regex.replace(~r/^\+1/, normalize(number), "")
       _ ->
-        {:error, :not_supported}
+        "invalid"
     end
   end
 
   @doc """
   Converts a number to 1npan
   """
+  @spec to_1npan(number :: String.t()) :: String.t()
   def to_1npan(number) do
     case classify(number) do
       "e164" ->
@@ -129,12 +133,15 @@ defmodule Number do
         number
       "us_tollfree" ->
         Regex.replace(~r/^\+/, normalize(number), "")
+      _ ->
+        "invalid"
     end
   end
 
   @doc """
   Converts an international number to us_intl format
   """
+  @spec to_usintl(number :: String.t()) :: String.t()
   def to_usintl(number) do
     case classify(number) do
       "international" ->
@@ -152,6 +159,7 @@ defmodule Number do
   @doc """
   Checks to see if the provided number is 10digit E164
   """
+  @spec is_use164?(number :: String.t()) :: Boolean.t()
   def is_use164?(number) do
     case is_e164?(number) do
       true ->
@@ -164,35 +172,43 @@ defmodule Number do
   @doc """
   to E164, we just call the normalize_us function
   """
+  @spec to_e164(number :: String.t()) :: String.t()
   def to_e164(number) do
     normalize(number)
   end
 
   #--- private ---#
+  @spec is_npan?(number :: String.t()) :: String.t()
   defp is_npan?(number) do
     String.match?(number, @npan)
   end
 
+  @spec is_1npan?(number :: String.t()) :: String.t()
   defp is_1npan?(number) do
     String.match?(number, @one_npan)
   end
 
+  @spec is_international?(number :: String.t()) :: String.t()
   defp is_international?(number) do
     String.match?(number, @international)
   end
 
+  @spec is_tollfree?(number :: String.t()) :: String.t()
   defp is_tollfree?(number) do
     String.match?(number, @tollfree)
   end
 
+  @spec is_tolled?(number :: String.t()) :: String.t()
   defp is_tolled?(number) do
     String.match?(number, @us_toll)
   end
 
+  @spec is_e164?(number :: String.t()) :: String.t()
   defp is_e164?(number) do
     String.match?(number, @e164)
   end
 
+  @spec is_usintl?(number :: String.t()) :: String.t()
   defp is_usintl?(number) do
     String.match?(number, @us_intl)
   end

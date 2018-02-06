@@ -44,4 +44,8 @@ defmodule NumberTest do
     assert "+18005551212" === Number.normalize("8005551212")
     assert "+96855556666" === Number.normalize("01196855556666")
   end
+
+  test "invalid numbers" do
+    assert Number.classify("+2065551212") == "unknown"
+  end
 end
