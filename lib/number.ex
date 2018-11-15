@@ -25,21 +25,21 @@ defmodule Number do
   Documentation for Number.
   """
 
-  #-- Number patterns used for regexes --#
-  @npan           ~r/\A^[2-9][0-9]{2}[2-9][0-9]{6}$\z/
-  @one_npan       ~r/\A^1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
-  @us_e164        ~r/\A^\+1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
-  @e164           ~r/\A^\+[1-9][0-9]{10,14}$\z/
-  @international  ~r/\A^(?:\+|011)[2-9][0-9]{10,14}\z/
-  @tollfree       ~r/\A^(?:\+)?(?:1)?(?:800|888|877|866|855|844|833)[2-9][0-9]{6}$\z/
-  @us_toll        ~r/\A^(?:\+)?(?:1)?(?:900|976)[2-9][0-9]{6}$\z/
-  @us_intl        ~r/\A^011[2-9][0-9]{10,14}$\z/
+  # -- Number patterns used for regexes --#
+  @npan ~r/\A^[2-9][0-9]{2}[2-9][0-9]{6}$\z/
+  @one_npan ~r/\A^1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
+  @us_e164 ~r/\A^\+1[2-9][0-9]{2}[2-9][0-9]{6}$\z/
+  @e164 ~r/\A^\+[1-9][0-9]{10,14}$\z/
+  @international ~r/\A^(?:\+|011)[2-9][0-9]{6,14}\z/
+  @tollfree ~r/\A^(?:\+)?(?:1)?(?:800|888|877|866|855|844|833)[2-9][0-9]{6}$\z/
+  @us_toll ~r/\A^(?:\+)?(?:1)?(?:900|976)[2-9][0-9]{6}$\z/
+  @us_intl ~r/\A^011[2-9][0-9]{10,14}$\z/
 
   @doc """
   Returns version
   """
   def version() do
-    Number.Mixfile.project[:version]
+    Number.Mixfile.project()[:version]
   end
 
   @doc """
@@ -54,16 +54,15 @@ defmodule Number do
   @spec classify(number :: String.t()) :: String.t()
   def classify(number) do
     cond do
-      is_tolled?(number)        -> "us_toll"
-      is_tollfree?(number)      -> "us_tollfree"
+      is_tolled?(number) -> "us_toll"
+      is_tollfree?(number) -> "us_tollfree"
       is_international?(number) -> "international"
-      is_npan?(number)          -> "npan"
-      is_1npan?(number)         -> "1npan"
-      is_e164?(number)          -> "e164"
-      true                      -> "unknown"
+      is_npan?(number) -> "npan"
+      is_1npan?(number) -> "1npan"
+      is_e164?(number) -> "e164"
+      true -> "unknown"
     end
   end
-
 
   @doc """
   Normalize a number
@@ -71,34 +70,38 @@ defmodule Number do
   @spec normalize(number :: String.t()) :: String.t()
   def normalize(number) do
     case classify(number) do
-      n when n in ["e164","npan", "1npan", "us_tollfree", "us_toll"] ->
+      n when n in ["e164", "npan", "1npan", "us_tollfree", "us_toll"] ->
         case is_e164?(number) do
           true ->
             number
+
           false ->
             cond do
-              is_npan?(number)  -> "+1#{number}"
+              is_npan?(number) -> "+1#{number}"
               is_1npan?(number) -> "+#{number}"
-              true              -> number
+              true -> number
             end
         end
+
       "international" ->
         case is_e164?(number) do
           true ->
             number
+
           false ->
             case is_usintl?(number) do
               true ->
                 Regex.replace(~r/\A^011/, number, "+")
+
               false ->
                 number
             end
         end
+
       _ ->
         "Unknown"
     end
   end
-
 
   @doc """
   Converts a number to NPAN
@@ -108,12 +111,16 @@ defmodule Number do
     case classify(number) do
       "e164" ->
         Regex.replace(~r/^\+1/, number, "")
+
       "1npan" ->
         Regex.replace(~r/^1/, number, "")
+
       "npan" ->
         number
+
       "us_tollfree" ->
         Regex.replace(~r/^\+1/, normalize(number), "")
+
       _ ->
         "invalid"
     end
@@ -127,12 +134,16 @@ defmodule Number do
     case classify(number) do
       "e164" ->
         Regex.replace(~r/^\+/, number, "")
+
       "npan" ->
         "1#{number}"
+
       "1npan" ->
         number
+
       "us_tollfree" ->
         Regex.replace(~r/^\+/, normalize(number), "")
+
       _ ->
         "invalid"
     end
@@ -148,9 +159,11 @@ defmodule Number do
         case is_e164?(number) do
           true ->
             Regex.replace(~r/\+/, number, "011")
+
           false ->
             number
         end
+
       _ ->
         number
     end
@@ -164,10 +177,11 @@ defmodule Number do
     case is_e164?(number) do
       true ->
         String.match?(number, @us_e164)
-      false -> false
+
+      false ->
+        false
     end
   end
-
 
   @doc """
   to E164, we just call the normalize_us function
@@ -177,7 +191,7 @@ defmodule Number do
     normalize(number)
   end
 
-  #--- private ---#
+  # --- private ---#
   @spec is_npan?(number :: String.t()) :: String.t()
   defp is_npan?(number) do
     String.match?(number, @npan)
