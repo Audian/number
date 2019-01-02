@@ -184,6 +184,14 @@ defmodule Number do
   end
 
   @doc """
+  Checks to see if the supplied number is E164
+  """
+  @spec is_international_e164?(did :: String.t()) :: Boolean.t()
+  def is_international_e164?(did) do
+    is_e164?(did) && is_international?(did)
+  end
+
+  @doc """
   to E164, we just call the normalize_us function
   """
   @spec to_e164(number :: String.t()) :: String.t()
