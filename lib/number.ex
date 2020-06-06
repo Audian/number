@@ -54,13 +54,35 @@ defmodule Number do
   @spec classify(number :: String.t()) :: String.t()
   def classify(number) do
     cond do
-      is_tolled?(number) -> "us_toll"
-      is_tollfree?(number) -> "us_tollfree"
-      is_international?(number) -> "international"
-      is_npan?(number) -> "npan"
-      is_1npan?(number) -> "1npan"
-      is_e164?(number) -> "e164"
-      true -> "unknown"
+      is_tolled?(number) ->
+        "us_toll"
+
+      is_tollfree?(number) ->
+        "us_tollfree"
+
+      is_international?(number) ->
+        "international"
+
+      is_npan?(number) ->
+        "npan"
+
+      is_1npan?(number) ->
+        "1npan"
+
+      is_e164?(number) ->
+        case is_use164?(number) do
+          true ->
+            "us_e164"
+
+          false ->
+            case is_international_e164?(number) do
+              true -> "international"
+              false -> "unknown"
+            end
+        end
+
+      true ->
+        "unknown"
     end
   end
 
