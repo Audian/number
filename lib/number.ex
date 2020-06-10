@@ -131,7 +131,7 @@ defmodule Number do
   @spec to_npan(number :: String) :: String.t()
   def to_npan(number) do
     case classify(number) do
-      "e164" ->
+      n when n in ["e164", "us_e164"] ->
         Regex.replace(~r/^\+1/, number, "")
 
       "1npan" ->
@@ -154,7 +154,7 @@ defmodule Number do
   @spec to_1npan(number :: String.t()) :: String.t()
   def to_1npan(number) do
     case classify(number) do
-      "e164" ->
+      n when n in ["e164", "us_e164"] ->
         Regex.replace(~r/^\+/, number, "")
 
       "npan" ->
