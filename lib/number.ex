@@ -92,7 +92,7 @@ defmodule Number do
   @spec normalize(number :: String.t()) :: String.t()
   def normalize(number) do
     case classify(number) do
-      n when n in ["e164", "npan", "1npan", "us_tollfree", "us_toll"] ->
+      n when n in ["e164", "us_e164", "npan", "1npan", "us_tollfree", "us_toll"] ->
         case is_e164?(number) do
           true ->
             number
